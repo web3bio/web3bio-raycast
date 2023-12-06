@@ -1,53 +1,88 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { List } from "@raycast/api";
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
 import { useEffect, useState } from "react";
 import { handleSearchPlatform } from "./utils/base";
 
 export default function Command() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [url, setUrl] = useState("");
-  const [platform, setPlatform] = useState("");
+  const [url, setUrl] = useState("https://api.web3.bio/");
+  const platform = handleSearchPlatform(searchTerm);
+
   useEffect(() => {
-    const _platform = handleSearchPlatform(searchTerm || "");
-    if (_platform && searchTerm) {
-      setPlatform(_platform);
-      setUrl("https//api.web3.bio" + `/ns/${_platform.toLowerCase()}/${searchTerm}`);
+    if (searchTerm && platform) {
+      setUrl("https://api.web3.bio/" + `profile/${searchTerm.toLowerCase()}`);
     }
   }, [searchTerm]);
-  // todo: to fufill here
-  console.log(platform, url);
-
-  const { isLoading, data: profiles } =
-    platform && searchTerm.length > 3
-      ? useFetch(url, {
-          keepPreviousData: true,
-        })
-      : { isLoading: false, data: [] };
   let title;
-
-  if (searchTerm.length === 0 && !profiles) {
+  const {
+    isLoading,
+    data: profiles,
+    mutate,
+  } = useFetch(url, {
+    parseResponse: async (res) => {
+      try {
+        return await res.json();
+      } catch (e) {
+        return [];
+      }
+    },
+    keepPreviousData: true,
+  });
+  if (searchTerm.length === 0) {
     title = "Please Enter";
-
-    if (searchTerm.length > 2 && (profiles as any).length === 0) {
-      title = "No results";
+    if (searchTerm.length > 2 && !platform) {
+      title = "invalidIdentity";
     }
+  }
 
-    if (searchTerm.length > 2 && isLoading) {
-      title = "Loading...";
-    }
-
+  return (
+    <List
+      isLoading={isLoading}
+      searchBarPlaceholder="Search Ethereum (ENS), Lens, Farcaster, UD..."
+      onSearchTextChange={setSearchTerm}
+      throttle
+      actions={
+        <ActionPanel>
+          <Action title="Enter domain to fetch universal profile aoi" onAction={() => mutate()} />
+        </ActionPanel>
+      }
+    >
+      <List.EmptyView title={title} icon={{ source: { light: "icon-light.png", dark: "icon-dark.png" } }} />
+      {profiles.map((item: any) => (
+        <List.Item
+          key={item.address}
+          title={item.identity}
+          actions={
+            <ActionPanel>
+              <Action.Push
+                title="Show Profile"
+                icon={Icon.AppWindowSidebarLeft}
+                target={<ProfileResults profile={item} />}
+              />
+            </ActionPanel>
+          }
+        />
+      ))}
+    </List>
+  );
+  function ProfileResults({ profile }: { profile: any }) {
     return (
-      <List
-        isLoading={isLoading}
-        searchBarPlaceholder="Search Ethereum (ENS), Lens, Farcaster, UD..."
-        onSearchTextChange={setSearchTerm}
-        throttle
-      >
-        <List.EmptyView title={title} icon={{ source: { light: "icon-light.png", dark: "icon-dark.png" } }} />
-        {((profiles as any) || []).map((item: any) => (
-          <List.Item key={item.id} title={item.title} />
-        ))}
+      <List>
+        <List.Section title="overview">
+          <List.Item
+            title={profile.identity}
+            detail={<List.Item.Detail metadata={<List.Item.Detail.Metadata.Label title={profile.address} />} />}
+            actions={
+              <ActionPanel>
+                <Action.OpenInBrowser
+                  title="Open in Web3bio profile page"
+                  url={"https://web3.bio/" + profile.identity}
+                />
+              </ActionPanel>
+            }
+          ></List.Item>
+        </List.Section>
       </List>
     );
   }
