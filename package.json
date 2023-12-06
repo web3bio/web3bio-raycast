@@ -3,19 +3,21 @@
   "name": "web3bio-profile",
   "title": "Web3bio Profile",
   "description": "Web3bio Profile",
-  "icon": "command-icon.png",
-  "author": "billy_shi",
+  "icon": "logo-iweb3bio.png",
+  "author": "@web3bio",
   "license": "MIT",
   "commands": [
     {
-      "name": "index",
-      "title": "Show Detail",
-      "description": "Template with a plain detail view\n",
+      "name": "web3bio-profile-search",
+      "title": "Web3bio Profile",
+      "subtitle": "Web3bio",
+      "description": "Command used to search for Web3 domains, ethereum address display a profile",
       "mode": "view"
     }
   ],
   "dependencies": {
-    "@raycast/api": "^1.63.0"
+    "@raycast/api": "^1.63.0",
+    "@raycast/utils": "^1.10.1"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^1.0.6",
