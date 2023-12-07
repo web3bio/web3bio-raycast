@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, Image, List, useNavigation } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
 import { useEffect, useState } from "react";
 import { handleSearchPlatform } from "./utils/base";
@@ -52,18 +52,18 @@ export default function Command() {
     >
       <List.EmptyView title={title} icon={"logo-web3bio.png"} />
       {!profiles || profiles?.error ? (
-        <List.Item title={profiles?.error || 'unknown error'} icon="😂" />
+        <List.Item title={profiles?.error || "unknown error"} icon="😂" />
       ) : (
         profiles?.map((item: any) => (
           <List.Item
-            key={item.identity+item.platform}
+            key={item.identity + item.platform}
             title={`${item.identity}(${item.platform})`}
             actions={
               <ActionPanel>
                 <Action.Push
-                  title="Show Profile"
+                  title="Profile Detail"
                   icon={Icon.AppWindowSidebarLeft}
-                  target={<ProfileResults profile={item} />}
+                  target={<ProfileResults profiles={profiles} />}
                 />
               </ActionPanel>
             }
@@ -72,22 +72,41 @@ export default function Command() {
       )}
     </List>
   );
-  function ProfileResults({ profile }: { profile: any }) {
+  function ProfileResults({ profiles }: { profiles: any }) {
+    const { pop } = useNavigation();
     return (
-      <List>
-        <List.Section title="overview">
-          <List.Item
-            title={profile.identity}
-            detail={<List.Item.Detail metadata={<List.Item.Detail.Metadata.Label title={profile.address} />} />}
-            actions={
-              <ActionPanel>
-                <Action.OpenInBrowser
-                  title="Open in Web3bio profile page"
-                  url={"https://web3.bio/" + profile.identity}
+      <List isShowingDetail searchBarPlaceholder={profiles[0].identity} onSearchTextChange={() => pop()}>
+        <List.Section title="Related Profiles">
+          {profiles.map((x: any) => (
+            <List.Item
+              key={`item_detailed_${x.identity}_${x.platform}`}
+              title={`${x.identity}(${x.platform})`}
+              detail={
+                <List.Item.Detail
+                  metadata={
+                    <List.Item.Detail.Metadata>
+                      <List.Item.Detail.Metadata.Label
+                        title="Avatar"
+                        icon={{ source: x.avatar, mask: Image.Mask.Circle,fallback:'logo-web3bio.png'  }}
+                      />
+                      <List.Item.Detail.Metadata.Label title="Address" text={x.address} />
+                      <List.Item.Detail.Metadata.Label title="Platform" text={x.platform} />
+                      <List.Item.Detail.Metadata.Label title="DisplayName" text={x.displayName} />
+                      <List.Item.Detail.Metadata.Label title="Email" text={x.email || ""} />
+                      <List.Item.Detail.Metadata.Label title="Description" text={x.description || ""} />
+                      <List.Item.Detail.Metadata.Label title="Location" text={x.location || ""} />
+                      <List.Item.Detail.Metadata.Label title="Header" text={x.header || ""} />
+                    </List.Item.Detail.Metadata>
+                  }
                 />
-              </ActionPanel>
-            }
-          ></List.Item>
+              }
+              actions={
+                <ActionPanel>
+                  <Action.OpenInBrowser title="Open in Web3bio Profile page" url={"https://web3.bio/" + x.identity} />
+                </ActionPanel>
+              }
+            />
+          ))}
         </List.Section>
       </List>
     );
