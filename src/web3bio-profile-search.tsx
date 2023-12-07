@@ -16,7 +16,6 @@ export default function Command() {
       setUrl(API_END_POINT + `/profile/${searchTerm.toLowerCase()}`);
     }
   }, [searchTerm]);
-  let title;
   const {
     isLoading,
     data: profiles,
@@ -24,22 +23,21 @@ export default function Command() {
   } = useFetch(url, {
     parseResponse: async (res) => {
       try {
-        return await res.json();
+        const rr = await res.json();
+        if (rr.error) return [];
+        return rr;
       } catch (e) {
         return [];
       }
     },
     keepPreviousData: true,
   });
-  if (searchTerm.length === 0) {
-    title = "";
-    if (searchTerm.length > 2 && !platform) {
-      title = "Invalid Identity";
-    }
-    if (searchTerm.length > 2 && !profiles?.length) {
-      title = "No Results, Please try different identity";
-    }
-  }
+  const emptyText = (() => {
+    if (!searchTerm) return "🔍 Search Ethereum (ENS), Lens, Farcaster, UD...";
+    if (searchTerm.length > 0 && !platform) return "❌ Invalid Identity, Please try different identity";
+    if (searchTerm.length > 0 && platform && !profiles?.length) return "👽 No Results, Please try different identity";
+    return "";
+  })();
   function PlatformFilter({ platforms, onSelectChange }: { platforms: string[]; onSelectChange: (v: string) => void }) {
     const _set = new Set(platforms);
     return (
@@ -59,15 +57,18 @@ export default function Command() {
       )
     );
   }
-
   return (
     <List
       isLoading={isLoading}
+      navigationTitle="Web3.bio"
       searchBarPlaceholder="Search Ethereum (ENS), Lens, Farcaster, UD..."
       onSearchTextChange={setSearchTerm}
       throttle
       searchBarAccessory={
-        <PlatformFilter platforms={profiles?.map((x: Profile) => x.platform)} onSelectChange={setFilter} />
+        <PlatformFilter
+          platforms={(!profiles?.length || profiles.error ? [] : profiles)?.map((x: Profile) => x.platform)}
+          onSelectChange={setFilter}
+        />
       }
       actions={
         <ActionPanel>
@@ -75,38 +76,34 @@ export default function Command() {
         </ActionPanel>
       }
     >
-      <List.EmptyView title={title} icon={"logo-web3bio.png"} />
-      {!profiles || profiles?.error ? (
-        <List.Item title={profiles?.error || "Unknown Error"} icon="😂" />
-      ) : (
-        profiles
-          .filter((x: Profile) => {
-            if (filter === "ALL") return x;
-            return x.platform === filter;
-          })
-          ?.map((item: Profile) => (
-            <List.Item
-              key={item.identity + item.platform}
-              title={item.identity}
-              subtitle={item.platform?.toUpperCase()}
-              icon={{ source: item.avatar || "", mask: Image.Mask.Circle, fallback: "logo-web3bio.png" }}
-              actions={
-                <ActionPanel>
-                  <Action.Push
-                    title="Profile Detail"
-                    icon={Icon.AppWindowSidebarLeft}
-                    target={
-                      <ProfileResults
-                        profiles={[item, ...profiles.filter((x: Profile) => item !== x)]}
-                        searchTerm={item.identity}
-                      />
-                    }
-                  />
-                </ActionPanel>
-              }
-            />
-          ))
-      )}
+      <List.EmptyView title={emptyText} icon={"logo-web3bio.png"} />
+      {profiles
+        ?.filter((x: Profile) => {
+          if (filter === "ALL") return x;
+          return x.platform === filter;
+        })
+        ?.map((item: Profile) => (
+          <List.Item
+            key={item.identity + item.platform}
+            title={item.identity}
+            subtitle={item.platform?.toUpperCase()}
+            icon={{ source: item.avatar || "", mask: Image.Mask.Circle, fallback: "logo-web3bio.png" }}
+            actions={
+              <ActionPanel>
+                <Action.Push
+                  title="Profile Detail"
+                  icon={Icon.AppWindowSidebarLeft}
+                  target={
+                    <ProfileResults
+                      profiles={[item, ...profiles.filter((x: Profile) => item !== x)]}
+                      searchTerm={item.identity}
+                    />
+                  }
+                />
+              </ActionPanel>
+            }
+          />
+        ))}
     </List>
   );
   function ProfileResults({ profiles, searchTerm }: { profiles: Profile[]; searchTerm: string }) {
