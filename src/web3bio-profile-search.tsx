@@ -134,44 +134,37 @@ export default function Command() {
                 ]}
                 detail={
                   <List.Item.Detail
-                    markdown={`![Avatar](${x.avatar}?raycast-width=120&raycast-height=120)`}
                     metadata={
                       <List.Item.Detail.Metadata>
-                        {x.avatar && (
-                          <List.Item.Detail.Metadata.Label
-                            title=""
-                            icon={{ source: x.avatar, mask: Image.Mask.Circle }}
-                          />
-                        )}
                         {x.displayName === x.identity ? (
-                          <List.Item.Detail.Metadata.Label title={x.displayName} />
+                          <List.Item.Detail.Metadata.Label title="" text={x.displayName} icon={{ source: x.avatar || "", mask: Image.Mask.Circle }} />
                         ) : (
                           <>
-                            <List.Item.Detail.Metadata.Label title={x.displayName || ""} />
-                            <List.Item.Detail.Metadata.Label title={x.identity} />
+                            <List.Item.Detail.Metadata.Label title="" text={x.displayName || ""} icon={{ source: x.avatar || "", mask: Image.Mask.Circle }} />
+                            <List.Item.Detail.Metadata.Label title="" text={x.identity} />
                           </>
                         )} 
-                        <List.Item.Detail.Metadata.Label title={x.address} />
+                        <List.Item.Detail.Metadata.Separator />
+                        <List.Item.Detail.Metadata.Label title="Address" text={x.address} />
                         <List.Item.Detail.Metadata.Label title="Platform" text={SocialPlatformMapping(x.platform as PlatformType).label} icon={SocialPlatformMapping(x.platform as PlatformType).icon} />
                         {x.description && (
-                          <List.Item.Detail.Metadata.Label title="Description" text={x.description} />
+                          <List.Item.Detail.Metadata.Label title="Bio" text={x.description} />
                         )}
                         {x.email && <List.Item.Detail.Metadata.Label title="Email" text={x.email} />}
                         {x.location && <List.Item.Detail.Metadata.Label title="Location" text={x.location} />}
-                        
 
                         {Object.keys(x.links)?.length > 0 && (
                           <>
                             <List.Item.Detail.Metadata.Separator />
-
+                            <List.Item.Detail.Metadata.Label title="🌐 Social links" />
                             {Object.keys(x.links).map((key) => {
                               const item = x.links[key as PlatformType];
                               return (
                                 item.handle && (
                                   <List.Item.Detail.Metadata.Link
                                     key={`${key}_${item.handle}`}
-                                    title={SocialPlatformMapping(key as PlatformType).label}
                                     text={item.handle}
+                                    title={SocialPlatformMapping(key as PlatformType).label}
                                     target={item.link}
                                   />
                                 )
@@ -179,6 +172,8 @@ export default function Command() {
                             })}
                           </>
                         )}
+                        <List.Item.Detail.Metadata.Separator />
+                        <List.Item.Detail.Metadata.Label title="More on Web3.bio" text="🖼 NFTs 🌈 Activity Feeds 🔮 POAPs" />
                       </List.Item.Detail.Metadata>
                     }
                   />
@@ -189,6 +184,7 @@ export default function Command() {
                       title="Open in Web3.bio Profile"
                       url={"https://web3.bio/" + relatedPath}
                     />
+                    <Action.CopyToClipboard title="Copy Address" content={String(x.address)} />
                   </ActionPanel>
                 }
               />
