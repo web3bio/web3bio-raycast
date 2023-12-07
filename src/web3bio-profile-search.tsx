@@ -4,14 +4,16 @@ import { useEffect, useState } from "react";
 import { handleSearchPlatform } from "./utils/base";
 import { Profile } from "./utils/types";
 
+const API_END_POINT = "https://api.web3.bio";
 export default function Command() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [url, setUrl] = useState("https://api.web3.bio/");
+  const [url, setUrl] = useState(API_END_POINT);
   const platform = handleSearchPlatform(searchTerm);
+  const [filter, setFilter] = useState("ALL");
 
   useEffect(() => {
     if (searchTerm && platform) {
-      setUrl("https://api.web3.bio/" + `profile/${searchTerm.toLowerCase()}`);
+      setUrl(API_END_POINT + `/profile/${searchTerm.toLowerCase()}`);
     }
   }, [searchTerm]);
   let title;
@@ -38,12 +40,35 @@ export default function Command() {
       title = "No Results, Please try different identity";
     }
   }
+  function PlatformFilter({ platforms, onSelectChange }: { platforms: string[]; onSelectChange: (v: string) => void }) {
+    const _set = new Set(platforms);
+    return (
+      platforms?.length > 0 && (
+        <List.Dropdown
+          tooltip="Select Platform Filter"
+          storeValue={false}
+          onChange={(newVal) => onSelectChange(newVal)}
+        >
+          <List.Dropdown.Section title="Platform filter">
+            <List.Dropdown.Item key={"ALL"} title={"ALL"} value={"ALL"} />
+            {[..._set].map((x: string) => {
+              return <List.Dropdown.Item key={x} title={x.toUpperCase()} value={x} />;
+            })}
+          </List.Dropdown.Section>
+        </List.Dropdown>
+      )
+    );
+  }
+
   return (
     <List
       isLoading={isLoading}
       searchBarPlaceholder="Search Ethereum (ENS), Lens, Farcaster, UD..."
       onSearchTextChange={setSearchTerm}
       throttle
+      searchBarAccessory={
+        <PlatformFilter platforms={profiles?.map((x: Profile) => x.platform)} onSelectChange={setFilter} />
+      }
       actions={
         <ActionPanel>
           <Action title="Enter to fetch" onAction={() => mutate()} />
@@ -52,25 +77,35 @@ export default function Command() {
     >
       <List.EmptyView title={title} icon={"logo-web3bio.png"} />
       {!profiles || profiles?.error ? (
-        <List.Item title={profiles?.error || "unknown error"} icon="😂" />
+        <List.Item title={profiles?.error || "Unknown Error"} icon="😂" />
       ) : (
-        profiles?.map((item: Profile) => (
-          <List.Item
-            key={item.identity + item.platform}
-            title={item.identity}
-            subtitle={item.platform}
-            icon={{ source: item.avatar || "", mask: Image.Mask.Circle, fallback: "logo-web3bio.png" }}
-            actions={
-              <ActionPanel>
-                <Action.Push
-                  title="Profile Detail"
-                  icon={Icon.AppWindowSidebarLeft}
-                  target={<ProfileResults profiles={profiles} searchTerm={item.identity} />}
-                />
-              </ActionPanel>
-            }
-          />
-        ))
+        profiles
+          .filter((x: Profile) => {
+            if (filter === "ALL") return x;
+            return x.platform === filter;
+          })
+          ?.map((item: Profile) => (
+            <List.Item
+              key={item.identity + item.platform}
+              title={item.identity}
+              subtitle={item.platform?.toUpperCase()}
+              icon={{ source: item.avatar || "", mask: Image.Mask.Circle, fallback: "logo-web3bio.png" }}
+              actions={
+                <ActionPanel>
+                  <Action.Push
+                    title="Profile Detail"
+                    icon={Icon.AppWindowSidebarLeft}
+                    target={
+                      <ProfileResults
+                        profiles={[item, ...profiles.filter((x: Profile) => item !== x)]}
+                        searchTerm={item.identity}
+                      />
+                    }
+                  />
+                </ActionPanel>
+              }
+            />
+          ))
       )}
     </List>
   );
@@ -84,7 +119,7 @@ export default function Command() {
               <List.Item
                 key={`item_detailed_${x.identity}_${x.platform}`}
                 title={x.identity}
-                subtitle={x.platform}
+                subtitle={x.platform?.toUpperCase()}
                 icon={{ source: x.avatar || "", mask: Image.Mask.Circle, fallback: "logo-web3bio.png" }}
                 detail={
                   <List.Item.Detail
@@ -106,21 +141,27 @@ export default function Command() {
                             icon={{ source: x.header, mask: Image.Mask.RoundedRectangle, fallback: "logo-web3bio.png" }}
                           />
                         )}
-                        <List.Item.Detail.Metadata.Label title="🌐 Social Medias" />
-                        <List.Item.Detail.Metadata.Separator />
-                        {Object.keys(x.links || {}).map((i) => {
-                          const item = x.links[i];
-                          return (
-                            item.handle && (
-                              <List.Item.Detail.Metadata.Link
-                                key={`${item.handle}_${item.link}`}
-                                title={i}
-                                text={item.handle}
-                                target={item.link}
-                              />
-                            )
-                          );
-                        })}
+
+                        {Object.keys(x.links || {})?.length > 0 && (
+                          <>
+                            <List.Item.Detail.Metadata.Label title="🌐 Social Medias" />
+                            <List.Item.Detail.Metadata.Separator />
+
+                            {Object.keys(x.links || {}).map((i) => {
+                              const item = x.links[i];
+                              return (
+                                item.handle && (
+                                  <List.Item.Detail.Metadata.Link
+                                    key={`${item.handle}_${item.link}`}
+                                    title={i}
+                                    text={item.handle}
+                                    target={item.link}
+                                  />
+                                )
+                              );
+                            })}
+                          </>
+                        )}
                       </List.Item.Detail.Metadata>
                     }
                   />
