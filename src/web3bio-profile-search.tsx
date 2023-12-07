@@ -34,8 +34,10 @@ export default function Command() {
     if (searchTerm.length > 2 && !platform) {
       title = "invalidIdentity";
     }
+    if (searchTerm.length > 2 && !profiles?.length) {
+      title = "No Results";
+    }
   }
-
   return (
     <List
       isLoading={isLoading}
@@ -44,26 +46,30 @@ export default function Command() {
       throttle
       actions={
         <ActionPanel>
-          <Action title="Enter domain to fetch universal profile aoi" onAction={() => mutate()} />
+          <Action title="Enter to fetch" onAction={() => mutate()} />
         </ActionPanel>
       }
     >
-      <List.EmptyView title={title} icon={{ source: { light: "icon-light.png", dark: "icon-dark.png" } }} />
-      {profiles.map((item: any) => (
-        <List.Item
-          key={item.address}
-          title={item.identity}
-          actions={
-            <ActionPanel>
-              <Action.Push
-                title="Show Profile"
-                icon={Icon.AppWindowSidebarLeft}
-                target={<ProfileResults profile={item} />}
-              />
-            </ActionPanel>
-          }
-        />
-      ))}
+      <List.EmptyView title={title} icon={"logo-web3bio.png"} />
+      {!profiles || profiles?.error ? (
+        <List.Item title={profiles?.error || 'unknown error'} icon="😂" />
+      ) : (
+        profiles?.map((item: any) => (
+          <List.Item
+            key={item.identity+item.platform}
+            title={`${item.identity}(${item.platform})`}
+            actions={
+              <ActionPanel>
+                <Action.Push
+                  title="Show Profile"
+                  icon={Icon.AppWindowSidebarLeft}
+                  target={<ProfileResults profile={item} />}
+                />
+              </ActionPanel>
+            }
+          />
+        ))
+      )}
     </List>
   );
   function ProfileResults({ profile }: { profile: any }) {
