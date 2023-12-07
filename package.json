@@ -1,16 +1,16 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "web3bio-profile",
-  "title": "Web3bio Profile",
-  "description": "Web3bio Profile",
+  "name": "web3.bio-profile",
+  "title": "Web3.bio Profile",
+  "description": "Web3.bio Profile",
   "icon": "logo-web3bio.png",
   "author": "@web3bio",
   "license": "MIT",
   "commands": [
     {
       "name": "web3bio-profile-search",
-      "title": "Web3bio Profile",
-      "subtitle": "Web3bio",
+      "title": "Web3.bio Profile",
+      "subtitle": "Web3.bio",
       "description": "Command used to search for Web3 domains, ethereum address display a profile",
       "mode": "view"
     }
