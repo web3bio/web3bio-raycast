@@ -1,11 +1,12 @@
-import { Action, ActionPanel, Icon, Image, List, useNavigation } from "@raycast/api";
+import { Action, ActionPanel, Icon, Image, List, useNavigation, Cache } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Profile } from "./utils/types";
 import { handleSearchPlatform, SocialPlatformMapping } from "./utils/utils";
 import { PlatformType } from "./utils/platform";
 
 const API_END_POINT = "https://api.web3.bio";
+const cache = new Cache();
 
 export default function Command() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -13,16 +14,7 @@ export default function Command() {
   const platform = handleSearchPlatform(searchTerm);
   const [filter, setFilter] = useState("ALL");
 
-  useEffect(() => {
-    if (searchTerm && platform) {
-      setUrl(API_END_POINT + `/profile/${searchTerm.toLowerCase()}`);
-    }
-  }, [searchTerm]);
-  const {
-    isLoading,
-    data: profiles,
-    mutate,
-  } = useFetch(url, {
+  const { isLoading, data, mutate } = useFetch(url, {
     parseResponse: async (res) => {
       try {
         const rr = await res.json();
@@ -32,14 +24,32 @@ export default function Command() {
         return [];
       }
     },
-    keepPreviousData: true,
   });
+
+  useEffect(() => {
+    if (searchTerm && platform && !cache.get(searchTerm)) {
+      setUrl(API_END_POINT + `/profile/${searchTerm.toLowerCase()}`);
+    }
+    if (data?.length > 0 && !cache.get(searchTerm)) {
+      cache.set(searchTerm, JSON.stringify(data));
+    }
+  }, [searchTerm, data, cache]);
+
+  const profiles = useCallback(() => {
+    const cached = cache.get(searchTerm);
+    if (searchTerm && cached && JSON.parse(cached).length > 0 && cached.includes(searchTerm)) {
+      return JSON.parse(cache.get(searchTerm)!);
+    }
+    return data || [];
+  }, [searchTerm, data, cache, platform])();
+
   const emptyText = (() => {
     if (!searchTerm) return "🔍 Search Ethereum (ENS), Lens, Farcaster, UD...";
     if (searchTerm.length > 0 && !platform) return "❌ Invalid Identity. Please try different identity.";
     if (searchTerm.length > 0 && platform && !profiles?.length) return "👽 No Results. Please try different identity.";
     return "";
   })();
+
   function PlatformFilter({ platforms, onSelectChange }: { platforms: string[]; onSelectChange: (v: string) => void }) {
     const _set = new Set(platforms);
     return (
@@ -59,6 +69,7 @@ export default function Command() {
       )
     );
   }
+
   return (
     <List
       isLoading={isLoading}
@@ -92,7 +103,10 @@ export default function Command() {
               subtitle={item.displayName && item.displayName === item.identity ? "" : item.identity}
               icon={{ source: item.avatar || "", mask: Image.Mask.Circle }}
               accessories={[
-                { text: SocialPlatformMapping(item.platform as PlatformType).label, icon: SocialPlatformMapping(item.platform as PlatformType).icon },
+                {
+                  text: SocialPlatformMapping(item.platform as PlatformType).label,
+                  icon: SocialPlatformMapping(item.platform as PlatformType).icon,
+                },
               ]}
               actions={
                 <ActionPanel>
@@ -108,7 +122,6 @@ export default function Command() {
                   />
                 </ActionPanel>
               }
-              
             />
           ))}
       </List.Section>
@@ -120,9 +133,7 @@ export default function Command() {
       <List isShowingDetail searchBarPlaceholder={searchTerm} onSearchTextChange={() => pop()}>
         <List.Section title="Profiles">
           {profiles.map((x: Profile) => {
-            const relatedPath = `${x.identity}${
-              x.platform === PlatformType.farcaster ? ".farcaster" : ""
-            }`;
+            const relatedPath = `${x.identity}${x.platform === PlatformType.farcaster ? ".farcaster" : ""}`;
             return (
               <List.Item
                 key={`item_detailed_${x.identity}_${x.platform}`}
@@ -130,26 +141,39 @@ export default function Command() {
                 subtitle={x.displayName && x.displayName === x.identity ? "" : x.identity}
                 icon={{ source: x.avatar || "", mask: Image.Mask.Circle }}
                 accessories={[
-                  { text: SocialPlatformMapping(x.platform as PlatformType).label, icon: SocialPlatformMapping(x.platform as PlatformType).icon },
+                  {
+                    text: SocialPlatformMapping(x.platform as PlatformType).label,
+                    icon: SocialPlatformMapping(x.platform as PlatformType).icon,
+                  },
                 ]}
                 detail={
                   <List.Item.Detail
                     metadata={
                       <List.Item.Detail.Metadata>
                         {x.displayName === x.identity ? (
-                          <List.Item.Detail.Metadata.Label title="" text={x.displayName} icon={{ source: x.avatar || "", mask: Image.Mask.Circle }} />
+                          <List.Item.Detail.Metadata.Label
+                            title=""
+                            text={x.displayName}
+                            icon={{ source: x.avatar || "", mask: Image.Mask.Circle }}
+                          />
                         ) : (
                           <>
-                            <List.Item.Detail.Metadata.Label title="" text={x.displayName || ""} icon={{ source: x.avatar || "", mask: Image.Mask.Circle }} />
+                            <List.Item.Detail.Metadata.Label
+                              title=""
+                              text={x.displayName || ""}
+                              icon={{ source: x.avatar || "", mask: Image.Mask.Circle }}
+                            />
                             <List.Item.Detail.Metadata.Label title="" text={x.identity} />
                           </>
-                        )} 
+                        )}
                         <List.Item.Detail.Metadata.Separator />
                         <List.Item.Detail.Metadata.Label title="Address" text={x.address} />
-                        <List.Item.Detail.Metadata.Label title="Platform" text={SocialPlatformMapping(x.platform as PlatformType).label} icon={SocialPlatformMapping(x.platform as PlatformType).icon} />
-                        {x.description && (
-                          <List.Item.Detail.Metadata.Label title="Bio" text={x.description} />
-                        )}
+                        <List.Item.Detail.Metadata.Label
+                          title="Platform"
+                          text={SocialPlatformMapping(x.platform as PlatformType).label}
+                          icon={SocialPlatformMapping(x.platform as PlatformType).icon}
+                        />
+                        {x.description && <List.Item.Detail.Metadata.Label title="Bio" text={x.description} />}
                         {x.email && <List.Item.Detail.Metadata.Label title="Email" text={x.email} />}
                         {x.location && <List.Item.Detail.Metadata.Label title="Location" text={x.location} />}
 
@@ -173,17 +197,17 @@ export default function Command() {
                           </>
                         )}
                         <List.Item.Detail.Metadata.Separator />
-                        <List.Item.Detail.Metadata.Label title="More on Web3.bio" text="🖼 NFTs 🌈 Activity Feeds 🔮 POAPs" />
+                        <List.Item.Detail.Metadata.Label
+                          title="More on Web3.bio"
+                          text="🖼 NFTs 🌈 Activity Feeds 🔮 POAPs"
+                        />
                       </List.Item.Detail.Metadata>
                     }
                   />
                 }
                 actions={
                   <ActionPanel>
-                    <Action.OpenInBrowser
-                      title="Open in Web3.bio Profile"
-                      url={"https://web3.bio/" + relatedPath}
-                    />
+                    <Action.OpenInBrowser title="Open in Web3.bio Profile" url={"https://web3.bio/" + relatedPath} />
                     <Action.CopyToClipboard title="Copy Address" content={String(x.address)} />
                   </ActionPanel>
                 }
