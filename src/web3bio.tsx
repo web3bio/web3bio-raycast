@@ -12,7 +12,7 @@ export default function Command() {
   const [searchTerm, setSearchTerm] = useState("");
   const [url, setUrl] = useState(API_END_POINT);
   const platform = handleSearchPlatform(searchTerm);
-  const [filter, setFilter] = useState("ALL");
+  const [filter, setFilter] = useState("All");
 
   const { isLoading, data, mutate } = useFetch(url, {
     parseResponse: async (res) => {
@@ -43,13 +43,6 @@ export default function Command() {
     return data || [];
   }, [searchTerm, data, cache, platform])();
 
-  const emptyText = (() => {
-    if (!searchTerm) return "🔍 Search Ethereum (ENS), Lens, Farcaster, UD...";
-    if (searchTerm.length > 0 && !platform) return "❌ Invalid Identity. Please try different identity.";
-    if (searchTerm.length > 0 && platform && !profiles?.length) return "👽 No Results. Please try different identity.";
-    return "";
-  })();
-
   function PlatformFilter({ platforms, onSelectChange }: { platforms: string[]; onSelectChange: (v: string) => void }) {
     const _set = new Set(platforms);
     return (
@@ -60,9 +53,9 @@ export default function Command() {
           onChange={(newVal) => onSelectChange(newVal)}
         >
           <List.Dropdown.Section title="Platform filter">
-            <List.Dropdown.Item key={"ALL"} title={"ALL"} value={"ALL"} />
+            <List.Dropdown.Item key={"All"} title={"All"} value={"All"} />
             {[..._set].map((x: string) => {
-              return <List.Dropdown.Item key={x} title={x.toUpperCase()} value={x} />;
+              return <List.Dropdown.Item key={x} title={SocialPlatformMapping(x as PlatformType).label} value={x} />;
             })}
           </List.Dropdown.Section>
         </List.Dropdown>
@@ -70,10 +63,16 @@ export default function Command() {
     );
   }
 
+  function EmptyView() {
+    const emptyIcon = !searchTerm ? "🔍" : isLoading ? "🚀" : !profiles?.length ? "🤖" : "";
+    const emptyTitle = !searchTerm ? "Web3 Identity Search" : isLoading ? "Searching..." : !profiles?.length ? "No results found" : "";
+    const emptyDescription = !searchTerm ? "Search Ethereum (ENS), Lens, Farcaster, UD..." : isLoading ? "Please wait a second." : !profiles?.length ? "Please try different identity keyword." : "";
+    return <List.EmptyView title={emptyTitle} icon={emptyIcon} description={emptyDescription} />;
+  }
+
   return (
     <List
       isLoading={isLoading}
-      navigationTitle="Web3.bio Profile"
       searchBarPlaceholder="Search Ethereum (ENS), Lens, Farcaster, UD..."
       onSearchTextChange={setSearchTerm}
       throttle
@@ -89,31 +88,19 @@ export default function Command() {
         </ActionPanel>
       }
     >
-      {!searchTerm && (
-        <List.EmptyView
-          title={"Web3 Profile Search"} 
-          description={"Search Ethereum (ENS), Lens, Farcaster, UD..."}
-          icon={"🔍"} />
-      )}
-
-      {searchTerm.length > 0 && !profiles?.length && (
-        <List.EmptyView
-          title={"No results found"} 
-          description={"Please try different identity keyword."}
-          icon={"🤖"} />
-      )}
+      <EmptyView />
       
       <List.Section title="Profiles">
         {profiles
           ?.filter((x: Profile) => {
-            if (filter === "ALL") return x;
+            if (filter === "All") return x;
             return x.platform === filter;
           })
           ?.map((item: Profile) => (
             <List.Item
               key={item.identity + item.platform}
               title={item.displayName || item.identity}
-              subtitle={item.displayName && item.displayName === item.identity ? "" : item.identity}
+              subtitle={item.displayName && item.displayName === item.identity ? item.address : item.identity}
               icon={{ source: item.avatar || "", mask: Image.Mask.Circle }}
               accessories={[
                 {
@@ -151,7 +138,7 @@ export default function Command() {
               <List.Item
                 key={`item_detailed_${x.identity}_${x.platform}`}
                 title={x.displayName || x.identity}
-                subtitle={x.displayName && x.displayName === x.identity ? "" : x.identity}
+                subtitle={x.displayName && x.displayName === x.identity ? x.address : x.identity}
                 icon={{ source: x.avatar || "", mask: Image.Mask.Circle }}
                 accessories={[
                   {
@@ -210,9 +197,10 @@ export default function Command() {
                           </>
                         )}
                         <List.Item.Detail.Metadata.Separator />
-                        <List.Item.Detail.Metadata.Label
+                        <List.Item.Detail.Metadata.Link
                           title="🖼 NFTs 🌈 Activity Feeds 🔮 POAPs"
                           text="More on Web3.bio"
+                          target={"https://web3.bio/" + relatedPath} 
                         />
                       </List.Item.Detail.Metadata>
                     }
