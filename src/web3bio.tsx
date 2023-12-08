@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Icon, Image, List, useNavigation, Cache } from "@raycast/api";
+import { Action, ActionPanel, Image, Icon, List, Cache } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
 import { useCallback, useEffect, useState } from "react";
 import { Profile } from "./utils/types";
@@ -53,7 +53,7 @@ export default function Command() {
           storeValue={false}
           onChange={(newVal) => onSelectChange(newVal)}
         >
-          <List.Dropdown.Section title="Platform filter">
+          <List.Dropdown.Section title="Platform Filter">
             <List.Dropdown.Item key={"All"} title={"All"} value={"All"} />
             {[..._set].map((x: string) => {
               return <List.Dropdown.Item key={x} title={SocialPlatformMapping(x as PlatformType).label} value={x} />;
@@ -108,14 +108,14 @@ export default function Command() {
                       <List.Item.Detail.Metadata>
                         {item.displayName === item.identity ? (
                           <List.Item.Detail.Metadata.Label
-                            title=""
+                            title="Profile"
                             text={item.displayName}
                             icon={{ source: item.avatar || "", mask: Image.Mask.Circle }}
                           />
                         ) : (
                           <>
                             <List.Item.Detail.Metadata.Label
-                              title=""
+                              title="Profile"
                               text={item.displayName || ""}
                               icon={{ source: item.avatar || "", mask: Image.Mask.Circle }}
                             />
@@ -178,7 +178,7 @@ export default function Command() {
                 {...props}
                 actions={
                   <ActionPanel>
-                    <Action title="Toggle Detail" onAction={() => setShowingDetail(!showingDetail)} />
+                    <Action title="Toggle Detail" icon={Icon.AppWindowSidebarLeft} onAction={() => setShowingDetail(!showingDetail)} />
                     <Action.OpenInBrowser title="Open in Web3.bio Profile" url={`https://web3.bio/${relatedPath}`} />
                     <Action.CopyToClipboard title="Copy Address" content={String(item.address)} />
                   </ActionPanel>

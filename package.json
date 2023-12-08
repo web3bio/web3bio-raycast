@@ -3,7 +3,7 @@
   "name": "web3bio",
   "title": "Web3.bio",
   "description": "Discover Web3 Identity Graph and Profiles",
-  "icon": "logo-web3bio.png",
+  "icon": "logo.svg",
   "author": "web3bio",
   "license": "MIT",
   "commands": [
