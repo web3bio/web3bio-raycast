@@ -75,7 +75,7 @@ export default function Command() {
     <List
       isLoading={isLoading}
       searchBarPlaceholder="Search Ethereum (ENS), Lens, Farcaster, UD..."
-      onSearchTextChange={setSearchTerm}
+      onSearchTextChange={(text) => {setSearchTerm(text);setShowingDetail(false);}}
       throttle
       isShowingDetail={showingDetail}
       searchBarAccessory={
