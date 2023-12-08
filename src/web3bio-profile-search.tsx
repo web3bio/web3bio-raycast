@@ -73,10 +73,10 @@ export default function Command() {
   return (
     <List
       isLoading={isLoading}
-      navigationTitle="Web3.bio"
+      navigationTitle="Web3.bio Profile"
       searchBarPlaceholder="Search Ethereum (ENS), Lens, Farcaster, UD..."
       onSearchTextChange={setSearchTerm}
-      throttle={false}
+      throttle
       searchBarAccessory={
         <PlatformFilter
           platforms={(!profiles?.length || profiles.error ? [] : profiles)?.map((x: Profile) => x.platform)}
@@ -89,7 +89,20 @@ export default function Command() {
         </ActionPanel>
       }
     >
-      <List.EmptyView title={emptyText} icon={"logo-web3bio.png"} />
+      {!searchTerm && (
+        <List.EmptyView
+          title={"Web3 Profile Search"} 
+          description={"Search Ethereum (ENS), Lens, Farcaster, UD..."}
+          icon={"🔍"} />
+      )}
+
+      {searchTerm.length > 0 && !profiles?.length && (
+        <List.EmptyView
+          title={"No results found"} 
+          description={"Please try different identity keyword."}
+          icon={"🤖"} />
+      )}
+      
       <List.Section title="Profiles">
         {profiles
           ?.filter((x: Profile) => {
@@ -130,7 +143,7 @@ export default function Command() {
   function ProfileResults({ profiles, searchTerm }: { profiles: Profile[]; searchTerm: string }) {
     const { pop } = useNavigation();
     return (
-      <List isShowingDetail searchBarPlaceholder={searchTerm} onSearchTextChange={() => pop()}>
+      <List isShowingDetail searchBarPlaceholder={searchTerm} >
         <List.Section title="Profiles">
           {profiles.map((x: Profile) => {
             const relatedPath = `${x.identity}${x.platform === PlatformType.farcaster ? ".farcaster" : ""}`;
@@ -198,8 +211,8 @@ export default function Command() {
                         )}
                         <List.Item.Detail.Metadata.Separator />
                         <List.Item.Detail.Metadata.Label
-                          title="More on Web3.bio"
-                          text="🖼 NFTs 🌈 Activity Feeds 🔮 POAPs"
+                          title="🖼 NFTs 🌈 Activity Feeds 🔮 POAPs"
+                          text="More on Web3.bio"
                         />
                       </List.Item.Detail.Metadata>
                     }
