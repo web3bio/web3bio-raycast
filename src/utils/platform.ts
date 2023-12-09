@@ -53,7 +53,7 @@ export enum PlatformType {
   twitter_hexagon = "twitter_hexagon",
   uniswap = "uniswap",
   degenscore = "degenscore",
-  firefly="firefly",
+  firefly = "firefly",
 }
 
 export const PlatformData: { [key in PlatformType]: SocialPlatform } = {

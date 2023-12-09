@@ -3,14 +3,15 @@
   "name": "web3bio",
   "title": "Web3.bio",
   "description": "Discover Web3 Identity Graph and Profiles",
-  "icon": "logo.svg",
+  "icon": "web3bio-icon.png",
   "author": "web3bio",
+  "keywords": ["web3bio", "web3", "did", "profile", "identity", "ens", "ethereum", "lens", "farcaster"],
   "license": "MIT",
   "commands": [
     {
       "name": "web3bio",
-      "title": "Web3.bio",
-      "subtitle": "Web3 Identity Search",
+      "title": "Search Web3 Identity",
+      "subtitle": "Web3.bio",
       "description": "Discover Web3 Identity Graph and Profiles",
       "mode": "view"
     }

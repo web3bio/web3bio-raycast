@@ -19,9 +19,7 @@ export const formatText = (string: string, length?: number) => {
   if (string.startsWith("0x") || string.length >= 42) {
     const oriAddr = string,
       chars = length || 4;
-    return `${oriAddr.substring(0, chars + 2)}...${oriAddr.substring(
-      oriAddr.length - chars
-    )}`;
+    return `${oriAddr.substring(0, chars + 2)}...${oriAddr.substring(oriAddr.length - chars)}`;
   } else {
     if (string.length > len) {
       return `${string.substr(0, len)}...`;
@@ -54,12 +52,7 @@ export const handleSearchPlatform = (term: string) => {
 };
 
 export const isDomainSearch = (term: PlatformType) => {
-  return [
-    PlatformType.ens,
-    PlatformType.dotbit,
-    PlatformType.unstoppableDomains,
-    PlatformType.space_id,
-  ].includes(term);
+  return [PlatformType.ens, PlatformType.dotbit, PlatformType.unstoppableDomains, PlatformType.space_id].includes(term);
 };
 
 export const SocialPlatformMapping = (platform: PlatformType) => {
@@ -75,17 +68,14 @@ export const SocialPlatformMapping = (platform: PlatformType) => {
 };
 
 const resolveSocialMediaLink = (name: string, type: PlatformType) => {
-  if (!Object.keys(PlatformType).includes(type))
-    return `https://web3.bio/?s=${name}`;
+  if (!Object.keys(PlatformType).includes(type)) return `https://web3.bio/?s=${name}`;
   switch (type) {
     case PlatformType.url:
       return `${name}`;
     case PlatformType.website:
       return `https://${name}`;
     default:
-      return SocialPlatformMapping(type).urlPrefix
-        ? SocialPlatformMapping(type).urlPrefix + name
-        : "";
+      return SocialPlatformMapping(type).urlPrefix ? SocialPlatformMapping(type).urlPrefix + name : "";
   }
 };
 
@@ -101,14 +91,4 @@ export const getSocialMediaLink = (url: string, type: PlatformType) => {
   return resolvedURL;
 };
 
-export const fallbackEmoji = [
-  "🤔",
-  "😱",
-  "😵‍💫",
-  "😵",
-  "🤦‍♀️",
-  "💆‍♂️",
-  "🤷‍♂️",
-  "🙇‍♂️",
-  "🤖",
-];
+export const fallbackEmoji = ["🤔", "😱", "😵‍💫", "😵", "🤦‍♀️", "💆‍♂️", "🤷‍♂️", "🙇‍♂️", "🤖"];

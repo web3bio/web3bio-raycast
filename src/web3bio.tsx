@@ -66,16 +66,31 @@ export default function Command() {
 
   function EmptyView() {
     const emptyIcon = !searchTerm ? "🔍" : isLoading ? "🚀" : !profiles?.length ? "🤖" : "";
-    const emptyTitle = !searchTerm ? "Web3 Identity Search" : isLoading ? "Searching..." : !profiles?.length ? "No results found" : "";
-    const emptyDescription = !searchTerm ? "Search Ethereum (ENS), Lens, Farcaster, UD..." : isLoading ? "Please wait a second." : !profiles?.length ? "Please try different identity keyword." : "";
+    const emptyTitle = !searchTerm
+      ? "Web3 Identity Search"
+      : isLoading
+        ? "Searching..."
+        : !profiles?.length
+          ? "No results found"
+          : "";
+    const emptyDescription = !searchTerm
+      ? "Search for Ethereum (ENS), Lens, Farcaster, UD..."
+      : isLoading
+        ? "Please wait a second."
+        : !profiles?.length
+          ? "Please try different identity keyword."
+          : "";
     return <List.EmptyView title={emptyTitle} icon={emptyIcon} description={emptyDescription} />;
   }
 
   return (
     <List
       isLoading={isLoading}
-      searchBarPlaceholder="Search Ethereum (ENS), Lens, Farcaster, UD..."
-      onSearchTextChange={(text) => {setSearchTerm(text);setShowingDetail(false);}}
+      searchBarPlaceholder="Search for Ethereum (ENS), Lens, Farcaster, UD..."
+      onSearchTextChange={(text) => {
+        setSearchTerm(text);
+        setShowingDetail(false);
+      }}
       throttle
       isShowingDetail={showingDetail}
       searchBarAccessory={
@@ -86,12 +101,12 @@ export default function Command() {
       }
       actions={
         <ActionPanel>
-          <Action title="Enter to search" onAction={() => mutate()} />
+          <Action title="Enter to Search" onAction={() => mutate()} />
         </ActionPanel>
       }
     >
       <EmptyView />
-      
+
       <List.Section title="Profiles">
         {profiles
           ?.filter((x: Profile) => {
@@ -101,69 +116,69 @@ export default function Command() {
           ?.map((item: Profile) => {
             const relatedPath = `${item.identity}${item.platform === PlatformType.farcaster ? ".farcaster" : ""}`;
             const props: Partial<List.Item.Props> = showingDetail
-            ? {
-                detail: (
-                  <List.Item.Detail
-                    metadata={
-                      <List.Item.Detail.Metadata>
-                        {item.displayName === item.identity ? (
-                          <List.Item.Detail.Metadata.Label
-                            title="Profile"
-                            text={item.displayName}
-                            icon={{ source: item.avatar || "", mask: Image.Mask.Circle }}
-                          />
-                        ) : (
-                          <>
+              ? {
+                  detail: (
+                    <List.Item.Detail
+                      metadata={
+                        <List.Item.Detail.Metadata>
+                          {item.displayName === item.identity ? (
                             <List.Item.Detail.Metadata.Label
                               title="Profile"
-                              text={item.displayName || ""}
+                              text={item.displayName}
                               icon={{ source: item.avatar || "", mask: Image.Mask.Circle }}
                             />
-                            <List.Item.Detail.Metadata.Label title="" text={item.identity} />
-                          </>
-                        )}
-                        <List.Item.Detail.Metadata.Separator />
-                        <List.Item.Detail.Metadata.Label title="Address" text={item.address} />
-                        <List.Item.Detail.Metadata.Label
-                          title="Platform"
-                          text={SocialPlatformMapping(item.platform as PlatformType).label}
-                          icon={SocialPlatformMapping(item.platform as PlatformType).icon}
-                        />
-                        {item.description && <List.Item.Detail.Metadata.Label title="Bio" text={item.description} />}
-                        {item.email && <List.Item.Detail.Metadata.Label title="Email" text={item.email} />}
-                        {item.location && <List.Item.Detail.Metadata.Label title="Location" text={item.location} />}
-  
-                        {Object.keys(item.links)?.length > 0 && (
-                          <>
-                            <List.Item.Detail.Metadata.Separator />
-                            <List.Item.Detail.Metadata.Label title="🌐 Social links" />
-                            {Object.keys(item.links).map((key) => {
-                              const x = item.links[key as PlatformType];
-                              return (
-                                x.handle && (
-                                  <List.Item.Detail.Metadata.Link
-                                    key={`${key}_${x.handle}`}
-                                    text={x.handle}
-                                    title={SocialPlatformMapping(key as PlatformType).label}
-                                    target={x.link}
-                                  />
-                                )
-                              );
-                            })}
-                          </>
-                        )}
-                        <List.Item.Detail.Metadata.Separator />
-                        <List.Item.Detail.Metadata.Link
-                          title="🖼 NFTs 🌈 Activity Feeds 🔮 POAPs"
-                          text="More on Web3.bio"
-                          target={`https://web3.bio/${relatedPath}`} 
-                        />
-                      </List.Item.Detail.Metadata>
-                    }
-                  />
-                ),
-              }
-            : {};
+                          ) : (
+                            <>
+                              <List.Item.Detail.Metadata.Label
+                                title="Profile"
+                                text={item.displayName || ""}
+                                icon={{ source: item.avatar || "", mask: Image.Mask.Circle }}
+                              />
+                              <List.Item.Detail.Metadata.Label title="" text={item.identity} />
+                            </>
+                          )}
+                          <List.Item.Detail.Metadata.Separator />
+                          <List.Item.Detail.Metadata.Label title="Address" text={item.address} />
+                          <List.Item.Detail.Metadata.Label
+                            title="Platform"
+                            text={SocialPlatformMapping(item.platform as PlatformType).label}
+                            icon={SocialPlatformMapping(item.platform as PlatformType).icon}
+                          />
+                          {item.description && <List.Item.Detail.Metadata.Label title="Bio" text={item.description} />}
+                          {item.email && <List.Item.Detail.Metadata.Label title="Email" text={item.email} />}
+                          {item.location && <List.Item.Detail.Metadata.Label title="Location" text={item.location} />}
+
+                          {Object.keys(item.links)?.length > 0 && (
+                            <>
+                              <List.Item.Detail.Metadata.Separator />
+                              <List.Item.Detail.Metadata.Label title="🌐 Social links" />
+                              {Object.keys(item.links).map((key) => {
+                                const x = item.links[key as PlatformType];
+                                return (
+                                  x.handle && (
+                                    <List.Item.Detail.Metadata.Link
+                                      key={`${key}_${x.handle}`}
+                                      text={x.handle}
+                                      title={SocialPlatformMapping(key as PlatformType).label}
+                                      target={x.link}
+                                    />
+                                  )
+                                );
+                              })}
+                            </>
+                          )}
+                          <List.Item.Detail.Metadata.Separator />
+                          <List.Item.Detail.Metadata.Link
+                            title="🖼 NFTs 🌈 Activity Feeds 🔮 POAPs"
+                            text="More on Web3.bio"
+                            target={`https://web3.bio/${relatedPath}`}
+                          />
+                        </List.Item.Detail.Metadata>
+                      }
+                    />
+                  ),
+                }
+              : {};
             return (
               <List.Item
                 key={item.identity + item.platform}
@@ -178,15 +193,18 @@ export default function Command() {
                 {...props}
                 actions={
                   <ActionPanel>
-                    <Action title="Toggle Detail" icon={Icon.AppWindowSidebarLeft} onAction={() => setShowingDetail(!showingDetail)} />
+                    <Action
+                      title="Toggle Detail"
+                      icon={Icon.AppWindowSidebarLeft}
+                      onAction={() => setShowingDetail(!showingDetail)}
+                    />
                     <Action.OpenInBrowser title="Open in Web3.bio Profile" url={`https://web3.bio/${relatedPath}`} />
                     <Action.CopyToClipboard title="Copy Address" content={String(item.address)} />
                   </ActionPanel>
                 }
               />
-            )
-          }
-          )}
+            );
+          })}
       </List.Section>
     </List>
   );
