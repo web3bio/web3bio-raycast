@@ -3,7 +3,7 @@ import { Platform, ProfileResponse } from "web3bio-profile-kit/types";
 import { Action, ActionPanel, Image, List, Cache } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
 import { useCallback, useEffect, useState } from "react";
-import { SocialPlatformMapping } from "./utils/utils";
+import { getPlatform } from "./utils/utils";
 
 const PROD_API_ENDPOINT = "https://api.web3.bio";
 
@@ -57,7 +57,7 @@ export default function Command() {
           <List.Dropdown.Section title="Platform filter">
             <List.Dropdown.Item key={"All"} title={"All"} value={"All"} />
             {[..._set].map((x: string) => {
-              return <List.Dropdown.Item key={x} title={SocialPlatformMapping(x as Platform).label} value={x} />;
+              return <List.Dropdown.Item key={x} title={getPlatform(x as Platform).label} value={x} />;
             })}
           </List.Dropdown.Section>
         </List.Dropdown>
@@ -75,11 +75,11 @@ export default function Command() {
           ? "No results found"
           : "";
     const emptyDescription = !searchTerm
-      ? "Search Ethereum (ENS), Lens, Farcaster, UD..."
+      ? "Search Ethereum, ENS, Lens, Farcaster..."
       : isLoading
         ? "Please wait a second."
         : !profiles?.length
-          ? "Please try different identity keyword."
+          ? "Please try different identity."
           : "";
     return <List.EmptyView title={emptyTitle} icon={emptyIcon} description={emptyDescription} />;
   }
@@ -87,7 +87,7 @@ export default function Command() {
   return (
     <List
       isLoading={isLoading}
-      searchBarPlaceholder="Search Ethereum (ENS), Lens, Farcaster, UD..."
+      searchBarPlaceholder="Search Ethereum, ENS, Lens, Farcaster..."
       onSearchTextChange={setSearchTerm}
       throttle
       isShowingDetail={showingDetail}
@@ -124,7 +124,8 @@ export default function Command() {
                               title=""
                               text={item.displayName}
                               icon={{
-                                source: item.avatar || `${PROD_API_ENDPOINT}/avatar/svg/${item.identity}`,
+                                source:
+                                  item.avatar || `${PROD_API_ENDPOINT}/avatar/svg/${item.platform},${item.identity}`,
                                 mask: Image.Mask.Circle,
                               }}
                             />
@@ -145,8 +146,8 @@ export default function Command() {
                           <List.Item.Detail.Metadata.Label title="Address" text={item.address || ""} />
                           <List.Item.Detail.Metadata.Label
                             title="Platform"
-                            text={SocialPlatformMapping(item.platform as Platform).label}
-                            icon={SocialPlatformMapping(item.platform as Platform).icon}
+                            text={getPlatform(item.platform as Platform).label}
+                            icon={getPlatform(item.platform as Platform).icon}
                           />
                           {item.description && <List.Item.Detail.Metadata.Label title="Bio" text={item.description} />}
                           {item.email && <List.Item.Detail.Metadata.Label title="Email" text={item.email} />}
@@ -163,7 +164,7 @@ export default function Command() {
                                     <List.Item.Detail.Metadata.Link
                                       key={`${key}_${x.handle}`}
                                       text={x.handle}
-                                      title={SocialPlatformMapping(key as Platform).label}
+                                      title={getPlatform(key as Platform).label}
                                       target={x.link || ""}
                                     />
                                   )
@@ -173,7 +174,7 @@ export default function Command() {
                           )}
                           <List.Item.Detail.Metadata.Separator />
                           <List.Item.Detail.Metadata.Link
-                            title="🖼 NFTs 🌈 Activity Feeds 🔮 POAPs"
+                            title=""
                             text="More on Web3.bio"
                             target={`https://web3.bio/${relatedPath}`}
                           />
@@ -194,7 +195,7 @@ export default function Command() {
                 }}
                 accessories={[
                   {
-                    icon: SocialPlatformMapping(item.platform as Platform).icon,
+                    icon: getPlatform(item.platform as Platform).icon,
                   },
                 ]}
                 {...props}

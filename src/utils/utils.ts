@@ -23,7 +23,7 @@ export const isDomainSearch = (term: Platform) => {
   return [Platform.ens, Platform.dotbit, Platform.unstoppableDomains, Platform.space_id].includes(term);
 };
 
-export const SocialPlatformMapping = (platform: Platform): Readonly<PlatformType> => {
+export const getPlatform = (platform: Platform): Readonly<PlatformType> => {
   return PLATFORM_DATA.get(platform) || { ...DEFAULT_PLATFORM, label: platform };
 };
 
@@ -36,10 +36,10 @@ const resolveSocialMediaLink = (name: string, type: Platform) => {
     case Platform.website:
       return `https://${name}`;
     case Platform.discord:
-      if (name.includes("https://")) return SocialPlatformMapping(type).urlPrefix + name;
+      if (name.includes("https://")) return getPlatform(type).urlPrefix + name;
       return "";
     default:
-      return SocialPlatformMapping(type).urlPrefix ? SocialPlatformMapping(type).urlPrefix + name : name;
+      return getPlatform(type).urlPrefix ? getPlatform(type).urlPrefix + name : name;
   }
 };
 
