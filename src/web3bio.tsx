@@ -1,6 +1,6 @@
 import { detectPlatform } from "web3bio-profile-kit/utils";
 import { Platform, ProfileResponse } from "web3bio-profile-kit/types";
-import { Action, ActionPanel, Image, List, Cache } from "@raycast/api";
+import { Action, ActionPanel, Image, List, Icon, Cache } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
 import { useCallback, useEffect, useState } from "react";
 import { getPlatform } from "./utils/utils";
@@ -16,7 +16,7 @@ export default function Command() {
   const platform = detectPlatform(searchTerm);
   const [filter, setFilter] = useState("All");
 
-  const { isLoading, data, mutate } = useFetch(url, {
+  const { isLoading, data } = useFetch(url, {
     parseResponse: async (res) => {
       try {
         const rr = await res.json();
@@ -54,7 +54,7 @@ export default function Command() {
           storeValue={false}
           onChange={(newVal) => onSelectChange(newVal)}
         >
-          <List.Dropdown.Section title="Platform filter">
+          <List.Dropdown.Section title="Platform Filter">
             <List.Dropdown.Item key={"All"} title={"All"} value={"All"} />
             {[..._set].map((x: string) => {
               return <List.Dropdown.Item key={x} title={getPlatform(x as Platform).label} value={x} />;
@@ -88,7 +88,10 @@ export default function Command() {
     <List
       isLoading={isLoading}
       searchBarPlaceholder="Search Ethereum, ENS, Lens, Farcaster..."
-      onSearchTextChange={setSearchTerm}
+      onSearchTextChange={(text) => {
+        setSearchTerm(text);
+        setShowingDetail(false);
+      }}
       throttle
       isShowingDetail={showingDetail}
       searchBarAccessory={
@@ -96,11 +99,6 @@ export default function Command() {
           platforms={(!profiles?.length || profiles.error ? [] : profiles)?.map((x: ProfileResponse) => x.platform)}
           onSelectChange={setFilter}
         />
-      }
-      actions={
-        <ActionPanel>
-          <Action title="Enter to Search" onAction={() => mutate()} />
-        </ActionPanel>
       }
     >
       <EmptyView />
@@ -121,7 +119,7 @@ export default function Command() {
                         <List.Item.Detail.Metadata>
                           {item.displayName === item.identity ? (
                             <List.Item.Detail.Metadata.Label
-                              title=""
+                              title="Profile"
                               text={item.displayName}
                               icon={{
                                 source:
@@ -132,10 +130,11 @@ export default function Command() {
                           ) : (
                             <>
                               <List.Item.Detail.Metadata.Label
-                                title=""
+                                title="Profile"
                                 text={item.displayName || ""}
                                 icon={{
-                                  source: item.avatar || `${PROD_API_ENDPOINT}/avatar/svg/${item.identity}`,
+                                  source:
+                                    item.avatar || `${PROD_API_ENDPOINT}/avatar/svg/${item.platform},${item.identity}`,
                                   mask: Image.Mask.Circle,
                                 }}
                               />
@@ -201,7 +200,11 @@ export default function Command() {
                 {...props}
                 actions={
                   <ActionPanel>
-                    <Action title="Toggle Detail" onAction={() => setShowingDetail(!showingDetail)} />
+                    <Action
+                      title="Toggle Detail"
+                      icon={Icon.AppWindowSidebarLeft}
+                      onAction={() => setShowingDetail(!showingDetail)}
+                    />
                     <Action.OpenInBrowser title="Open in Web3.bio Profile" url={`https://web3.bio/${relatedPath}`} />
                     <Action.CopyToClipboard title="Copy Address" content={String(item.address)} />
                   </ActionPanel>
