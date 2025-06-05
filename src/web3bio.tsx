@@ -22,7 +22,7 @@ export default function Command() {
         const rr = await res.json();
         if (rr.error) return [];
         return rr;
-      } catch (e) {
+      } catch {
         return [];
       }
     },
