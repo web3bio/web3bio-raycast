@@ -1,5 +1,5 @@
-import { PLATFORM_DATA, DEFAULT_PLATFORM } from "web3bio-profile-kit/utils";
-import { Platform, PlatformType } from "web3bio-profile-kit/types";
+import { getPlatform } from "web3bio-profile-kit/utils";
+import { Platform } from "web3bio-profile-kit/types";
 
 export const formatText = (string: string, length?: number) => {
   if (!string) return "";
@@ -17,14 +17,6 @@ export const formatText = (string: string, length?: number) => {
     }
   }
   return string;
-};
-
-export const isDomainSearch = (term: Platform) => {
-  return [Platform.ens, Platform.dotbit, Platform.unstoppableDomains, Platform.space_id].includes(term);
-};
-
-export const getPlatform = (platform: Platform): Readonly<PlatformType> => {
-  return PLATFORM_DATA.get(platform) || { ...DEFAULT_PLATFORM, label: platform };
 };
 
 const resolveSocialMediaLink = (name: string, type: Platform) => {

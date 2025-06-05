@@ -1,9 +1,8 @@
-import { detectPlatform } from "web3bio-profile-kit/utils";
-import { Platform, ProfileResponse } from "web3bio-profile-kit/types";
-import { Action, ActionPanel, Image, List, Icon, Cache } from "@raycast/api";
+import { Action, ActionPanel, Cache, Icon, Image, List } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
 import { useCallback, useEffect, useState } from "react";
-import { getPlatform } from "./utils/utils";
+import { Platform, ProfileResponse } from "web3bio-profile-kit/types";
+import { detectPlatform, getPlatform } from "web3bio-profile-kit/utils";
 
 const PROD_API_ENDPOINT = "https://api.web3.bio";
 
